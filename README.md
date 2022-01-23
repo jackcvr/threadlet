@@ -45,7 +45,7 @@ WORK_TIME = 0.5
 IDLE_TIMEOUT = 1
 
 # "idle_timeout" argument:
-# workers now are going to die after not doing any work for "idle_timeout" time.
+# workers now are going to die after doing nothing for "idle_timeout" time.
 with ThreadPoolExecutor(MAX_WORKERS, idle_timeout=IDLE_TIMEOUT) as tpe:
     assert threading.active_count() == 1
     for _ in range(2):
