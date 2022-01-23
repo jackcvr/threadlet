@@ -14,10 +14,8 @@ class Thread(threading.Thread):
         if self._target:
             self._target: typing.Callable = partial(
                 contextvars.copy_context().run,
-                FuturedFunc(future=self._future, func=self._target, args=self._args, kwargs=self._kwargs),
+                FuturedFunc(future=self._future, func=self._target),
             )
-            self._args: typing.Any = ()
-            self._kwargs: typing.Any = {}
 
     def __enter__(self):
         if not self._started.is_set():
