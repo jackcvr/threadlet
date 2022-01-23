@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "threadlet"
-version = "0.1.0"
+version = "0.1.1"
 description = "Improved `Thread` and `ThreadPoolExecutor` classes."
 authors = ["Andrii Kuzmin <jack.cvr@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://github.com/jackcvr/threadlet"
 include = []
 
 [tool.poetry.dependencies]
