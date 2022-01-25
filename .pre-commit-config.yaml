@@ -9,8 +9,6 @@ repos:
       - id: check-added-large-files
       - id: check-yaml
       - id: debug-statements
-      - id: name-tests-test
-        args: [--django]
       - id: requirements-txt-fixer
   - repo: https://github.com/pycqa/isort
     rev: 5.10.1
