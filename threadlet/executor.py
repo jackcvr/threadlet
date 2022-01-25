@@ -88,8 +88,8 @@ class ThreadPoolExecutor(_base.Executor):
         self._idle_timeout = idle_timeout
         self._work_queue: queue.SimpleQueue = queue.SimpleQueue()
         self._idle_semaphore = threading.Semaphore(0)
-        self._threads: typing.Set = set()
-        self._futures: typing.Set = set()
+        self._threads: typing.Set[threading.Thread] = set()
+        self._futures: typing.Set[_base.Future] = set()
         self._is_broken = False
         self._shutdown = False
         self._shutdown_lock = threading.Lock()
@@ -98,12 +98,12 @@ class ThreadPoolExecutor(_base.Executor):
         self._initargs = initargs
         self._worker_class = worker_class
 
-    def __enter__(self):
+    def __enter__(self) -> "ThreadPoolExecutor":
         for _ in range(self._min_workers):
             self._add_thread(idle_timeout=None)
         return self
 
-    def submit(self, fn: typing.Callable, /, *args: typing.Any, **kwargs: typing.Any):
+    def submit(self, fn: typing.Callable, /, *args: typing.Any, **kwargs: typing.Any) -> _base.Future:
         with self._shutdown_lock, _global_shutdown_lock:
             if self._is_broken:
                 raise RuntimeError("cannot schedule new futures as workers are broken")
@@ -124,10 +124,10 @@ class ThreadPoolExecutor(_base.Executor):
 
     submit.__doc__ = _base.Executor.submit.__doc__
 
-    def _work_done_cb(self, f: _base.Future):
+    def _work_done_cb(self, f: _base.Future) -> None:
         self._futures.discard(f)
 
-    def _add_thread(self, idle_timeout, num_threads=None):
+    def _add_thread(self, idle_timeout: typing.Optional[int], num_threads: typing.Optional[int] = None) -> None:
         thread_name = f"{(self._thread_name_prefix or self)}_{num_threads or len(self._threads)}"
         t = self._worker_class(name=thread_name, target=self._worker, args=(idle_timeout,))
         t.future.add_done_callback(self._thread_done_cb)
@@ -135,7 +135,7 @@ class ThreadPoolExecutor(_base.Executor):
         self._threads.add(t)
         _threads_shutdowns[t] = self._shutdown_thread
 
-    def _thread_done_cb(self, f: _base.Future):
+    def _thread_done_cb(self, f: _base.Future) -> None:
         if _shutdown:
             self._shutdown = True
         self._idle_semaphore.acquire(blocking=False)
@@ -146,7 +146,7 @@ class ThreadPoolExecutor(_base.Executor):
             logger.critical("Exception in worker", exc_info=e)
             self.shutdown(wait=False, cancel_futures=True)
 
-    def _worker(self, idle_timeout: int = None):
+    def _worker(self, idle_timeout: int = None) -> None:
         if self._initializer:
             self._initializer(*self._initargs)
 
@@ -169,7 +169,7 @@ class ThreadPoolExecutor(_base.Executor):
                 # Delete references to object. See issue16284
                 del work_item
 
-    def shutdown(self, wait: bool = True, *, cancel_futures: bool = False):
+    def shutdown(self, wait: bool = True, *, cancel_futures: bool = False) -> None:
         with self._shutdown_lock:
             if cancel_futures:
                 for f in frozenset(self._futures):
@@ -189,5 +189,5 @@ class ThreadPoolExecutor(_base.Executor):
 
     shutdown.__doc__ = _base.Executor.shutdown.__doc__
 
-    def _shutdown_thread(self):
+    def _shutdown_thread(self) -> None:
         self._work_queue.put_nowait(None)

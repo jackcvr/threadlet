@@ -17,19 +17,19 @@ class Thread(threading.Thread):
                 FuturedFunc(future=self._future, func=self._target),
             )
 
-    def __enter__(self):
-        if not self._started.is_set():
+    def __enter__(self) -> "Thread":
+        if not self._started.is_set():  # type: ignore
             self.start()
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self.join()
 
     @property
-    def future(self):
+    def future(self) -> _base.Future:
         return self._future
 
-    def join(self, *args, **kwargs):
+    def join(self, *args, **kwargs) -> None:
         try:
             super().join(*args, **kwargs)
         finally:
