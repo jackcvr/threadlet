@@ -18,6 +18,7 @@ class FuturedFunc(typing.NamedTuple):
             res = self.func(*args, **kwargs)
         except BaseException as e:
             self.future.set_exception(e)
+            # Break a reference cycle with the exception 'exc'
             self = None
         else:
             self.future.set_result(res)

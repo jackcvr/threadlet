@@ -5,8 +5,8 @@ from concurrent import futures
 
 import pytest
 
-from threadlet import CancelledError, TimeoutError
-from threadlet.executor import ThreadPoolExecutor
+from threadlet import TimeoutError
+from threadlet.executor import BrokenThreadPool, ThreadPoolExecutor
 
 
 def test_executor_shutdown():
@@ -52,7 +52,7 @@ def test_executor_worker_error():
 
     with ThreadPoolExecutor(1, initializer=raise_init_error) as tpe:
         f = tpe.submit(time.sleep, 2)
-        with pytest.raises(CancelledError):
+        with pytest.raises(BrokenThreadPool):
             f.result(1)
         del f
 
