@@ -11,7 +11,7 @@ Improved ThreadPoolExecutor
 
 - [Installation](#installation)
 - [License](#license)
-- [Features](#feature)
+- [Features](#features)
 - [Benchmarks](#benchmarks)
 
 ## Installation
