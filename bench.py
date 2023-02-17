@@ -1,15 +1,15 @@
-import contextlib
 import threading
 import time
 from concurrent import futures
+from contextlib import contextmanager
 
-from threadlet.executor import ThreadPoolExecutor
+import threadlet
 
 BIG_AMOUNT = 1_000_000
 NUMBERS = [1, 1]
 
 
-@contextlib.contextmanager
+@contextmanager
 def timer():
     class Res:
         spent = 0
@@ -22,7 +22,7 @@ def timer():
         res.spent = time.monotonic() - st
 
 
-@contextlib.contextmanager
+@contextmanager
 def bench(executor):
     with executor:
         with timer() as t:
@@ -31,7 +31,7 @@ def bench(executor):
     print(f"{name}\ttime spent: {t.spent} sec")
 
 
-@contextlib.contextmanager
+@contextmanager
 def title(s):
     print(f"{s}\n---")
     yield
@@ -40,12 +40,11 @@ def title(s):
 
 def bench_submit(max_workers):
     with title(f"submit(sum, {NUMBERS}) max_workers={max_workers} times={BIG_AMOUNT}:"):
-
         with bench(futures.ThreadPoolExecutor(max_workers)) as tpe:
             for _ in range(BIG_AMOUNT):
                 tpe.submit(tpe.submit(sum, NUMBERS))
 
-        with bench(ThreadPoolExecutor(max_workers)) as tpe:
+        with bench(threadlet.ThreadPoolExecutor(max_workers)) as tpe:
             for _ in range(BIG_AMOUNT):
                 tpe.submit(tpe.submit(sum, NUMBERS))
 
@@ -58,7 +57,6 @@ def bench_wait_all(max_workers):
         return sum(*args)
 
     with title(f"futures.wait(<{BIG_AMOUNT} futures>) max_workers={max_workers}"):
-
         with futures.ThreadPoolExecutor(max_workers) as tpe:
             fs = []
             for _ in range(BIG_AMOUNT):
@@ -69,7 +67,7 @@ def bench_wait_all(max_workers):
 
         start.clear()
 
-        with ThreadPoolExecutor(max_workers) as tpe:
+        with threadlet.ThreadPoolExecutor(max_workers) as tpe:
             fs = []
             for _ in range(BIG_AMOUNT):
                 fs.append(tpe.submit(sum_, NUMBERS))
@@ -82,14 +80,13 @@ def bench_submit_and_wait_all(max_workers):
     with title(
         f"submit(sum, {NUMBERS}) {BIG_AMOUNT} times then futures.wait(<{BIG_AMOUNT} futures>) max_workers={max_workers}"
     ):
-
         with bench(futures.ThreadPoolExecutor(max_workers)) as tpe:
             fs = []
             for _ in range(BIG_AMOUNT):
                 fs.append(tpe.submit(sum, NUMBERS))
             futures.wait(fs)
 
-        with bench(ThreadPoolExecutor(max_workers)) as tpe:
+        with bench(threadlet.ThreadPoolExecutor(max_workers)) as tpe:
             fs = []
             for _ in range(BIG_AMOUNT):
                 fs.append(tpe.submit(sum, NUMBERS))

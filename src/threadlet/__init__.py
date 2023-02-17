@@ -2,10 +2,10 @@ import itertools
 import os
 import queue
 import threading
+import typing
 import weakref
+from concurrent.futures import TimeoutError  # noqa
 from concurrent.futures import _base
-
-from .utils import FuturedFunc
 
 _threads_queues: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
 _shutdown = False
@@ -100,6 +100,28 @@ class BrokenThreadPool(_base.BrokenExecutor):
     """
     Raised when a worker thread in a ThreadPoolExecutor failed initializing.
     """
+
+
+class FuturedFunc(typing.NamedTuple):
+    future: _base.Future
+    func: typing.Callable
+    args: typing.Any = None
+    kwargs: typing.Any = None
+
+    def __call__(self, *args, **kwargs):
+        if not self.future.set_running_or_notify_cancel():
+            return
+
+        try:
+            args = args or self.args or ()
+            kwargs = kwargs or self.kwargs or {}
+            res = self.func(*args, **kwargs)
+        except BaseException as e:
+            self.future.set_exception(e)
+            # Break a reference cycle with the exception 'exc'
+            self = None
+        else:
+            self.future.set_result(res)
 
 
 class ThreadPoolExecutor(_base.Executor):

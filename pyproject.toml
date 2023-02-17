@@ -1,23 +1,63 @@
-[tool.poetry]
-name = "threadlet"
-version = "0.2.0"
-description = "Improved `Thread` and `ThreadPoolExecutor` classes."
-authors = ["Andrii Kuzmin <jack.cvr@gmail.com>"]
-license = "MIT"
-readme = "README.md"
-documentation = "https://github.com/jackcvr/threadlet"
-include = []
-
-[tool.poetry.dependencies]
-python = "^3.9"
-
-[tool.poetry.dev-dependencies]
-pre-commit = "*"
-pytest = "*"
-
-[tool.pytest.ini_options]
-log_cli = true
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "threadlet"
+description = "Improved ThreadPoolExecutor"
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Andrii Kuzmin", email = "jack.cvr@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = []
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://github.com/jackcvr/threadlet#readme"
+Issues = "https://github.com/jackcvr/threadlet/issues"
+Source = "https://github.com/jackcvr/threadlet"
+
+[tool.hatch.version]
+path = "src/threadlet/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "pytest",
+  "pytest-cov",
+]
+[tool.hatch.envs.default.scripts]
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/threadlet --cov=tests {args}"
+no-cov = "cov --no-cov {args}"
+
+[[tool.hatch.envs.test.matrix]]
+python = ["37", "38", "39", "310", "311"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+omit = [
+  "src/threadlet/__about__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "no cov",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "if t\\.TYPE_CHECKING:",
+    "if typing\\.TYPE_CHECKING:",
+]
