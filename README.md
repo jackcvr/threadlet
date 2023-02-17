@@ -31,7 +31,7 @@ pip install threadlet
 ```python
 import time
 import threading
-from src.threadlet import ThreadPoolExecutor
+from threadlet import ThreadPoolExecutor
 
 MAX_WORKERS = 4
 MIN_WORKERS = 2
