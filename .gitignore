@@ -107,3 +107,4 @@ ENV/
 
 # misc
 docker-compose.override.yml
+benchmarks/data/*
