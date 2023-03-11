@@ -146,7 +146,6 @@ class _PoolWorker(Worker):
                         break
                 if item is None:
                     break
-                self._is_idle = False
                 item()
                 del item
         finally:
@@ -157,7 +156,7 @@ class _PoolWorker(Worker):
 
 class ThreadPoolExecutor(SimpleThreadPoolExecutor):
     MAX_WORKERS = min(32, (os.cpu_count() or 1) + 4)
-    IDLE_TIMEOUT = 1
+    IDLE_TIMEOUT = 5
 
     def __init__(
         self,
