@@ -44,7 +44,7 @@ with Worker() as w:
     future = w.submit(calc, 3)
     assert future.result() == 6
 
-# "idle_timeout" argument:
+# "idle_timeout" argument (1 seconds by default):
 # workers are going to die after doing nothing for "idle_timeout" seconds.
 with ThreadPoolExecutor(4, idle_timeout=1) as tpe:
     assert threading.active_count() == 1
