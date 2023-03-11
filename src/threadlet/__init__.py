@@ -18,13 +18,13 @@ wait = _base.wait
 class Item:
     __slots__ = ("target", "args", "kwargs", "future")
 
-    def __init__(self, target: t.Callable, args: t.Any, kwargs: t.Any):
+    def __init__(self, target: t.Callable, args: t.Any, kwargs: t.Any) -> None:
         self.target = target
         self.args = args
         self.kwargs = kwargs
         self.future: _base.Future = _base.Future()
 
-    def __call__(self):
+    def __call__(self) -> None:
         if not self.future.set_running_or_notify_cancel():
             return
 
@@ -46,7 +46,7 @@ def run_in_thread(target: t.Callable, *args: t.Any, **kwargs: t.Any) -> _base.Fu
     return item.future
 
 
-def _cancel_all_futures(q: QueueType):
+def _cancel_all_futures(q: QueueType) -> None:
     while True:
         try:
             item = q.get_nowait()
@@ -91,7 +91,7 @@ class SimpleThreadPoolExecutor(BaseThreadPoolExecutor):
         self._shutdown_lock = threading.Lock()
 
     @property
-    def workers(self):
+    def workers(self) -> t.Set[Worker]:
         return self._workers
 
     def __enter__(self) -> "SimpleThreadPoolExecutor":
@@ -175,7 +175,7 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
         self._idle_sem = threading.Semaphore(0)
 
     @property
-    def idle_sem(self):
+    def idle_sem(self) -> threading.Semaphore:
         return self._idle_sem
 
     def __enter__(self) -> "ThreadPoolExecutor":
