@@ -70,5 +70,5 @@ class BaseThreadPoolExecutor(AbstractContextManager):
         ...
 
     @abc.abstractmethod
-    def shutdown(self, wait=True, *, cancel_futures=False) -> None:
+    def shutdown(self, wait=True) -> None:
         ...

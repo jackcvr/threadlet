@@ -11,7 +11,7 @@ python3 $ROOT/bench_default.py -o $DATA_DIR/default.json \
     && python3 $ROOT/bench_threadlet.py -o $DATA_DIR/threadlet.json \
     && python3 -m pyperf compare_to --table $DATA_DIR/*.json
 
-python3 $ROOT/bench_default.py -o $DATA_DIR/default.mem.json --track-memory \
-    && python3 $ROOT/bench_threadlet_simple.py -o $DATA_DIR/threadlet_simple.mem.json --track-memory \
-    && python3 $ROOT/bench_threadlet.py -o $DATA_DIR/threadlet.mem.json --track-memory \
-    && python3 -m pyperf compare_to --table $DATA_DIR/*.mem.json
+#python3 $ROOT/bench_default.py -o $DATA_DIR/default.mem.json --track-memory \
+#    && python3 $ROOT/bench_threadlet_simple.py -o $DATA_DIR/threadlet_simple.mem.json --track-memory \
+#    && python3 $ROOT/bench_threadlet.py -o $DATA_DIR/threadlet.mem.json --track-memory \
+#    && python3 -m pyperf compare_to --table $DATA_DIR/*.mem.json

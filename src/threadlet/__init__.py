@@ -88,7 +88,6 @@ class SimpleThreadPoolExecutor(BaseThreadPoolExecutor):
         self._name = str(name or f"ThreadPool-{self.__class__._counter()}")
         self._queue: QueueType = queue.Queue(maxsize=queue_limit) if queue_limit else queue.SimpleQueue()
         self._workers: t.Set[Worker] = set()
-        self._shutdown_lock = threading.Lock()
 
     @property
     def workers(self) -> t.Set[Worker]:
@@ -102,17 +101,13 @@ class SimpleThreadPoolExecutor(BaseThreadPoolExecutor):
         return self
 
     def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> _base.Future:
-        with self._shutdown_lock:
-            item = Item(target, args, kwargs)
-            self._queue.put(item)
-            return item.future
+        item = Item(target, args, kwargs)
+        self._queue.put(item)
+        return item.future
 
-    def shutdown(self, wait=True, *, cancel_futures=False) -> None:
-        with self._shutdown_lock:
-            if cancel_futures:
-                _cancel_all_futures(self._queue)
-            for w in set(self._workers):
-                w.stop()
+    def shutdown(self, wait=True) -> None:
+        for w in set(self._workers):
+            w.stop()
         if wait:
             for w in set(self._workers):
                 w.join()
@@ -172,6 +167,7 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
         self._min_workers = min_workers
         self._idle_timeout = idle_timeout
         self._idle_sem = threading.Semaphore(0)
+        self._shutdown_lock = threading.Lock()
 
     @property
     def idle_sem(self) -> threading.Semaphore:
@@ -201,3 +197,13 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
             if workers_num < self._max_workers and not has_idle_workers:
                 self._add_worker(idle_timeout=self._idle_timeout)
             return item.future
+
+    def shutdown(self, wait=True, *, cancel_futures=False) -> None:
+        with self._shutdown_lock:
+            if cancel_futures:
+                _cancel_all_futures(self._queue)
+            for w in set(self._workers):
+                w.stop()
+        if wait:
+            for w in set(self._workers):
+                w.join()
