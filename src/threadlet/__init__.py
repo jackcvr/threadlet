@@ -25,10 +25,11 @@ class Task:
         self.kwargs = kwargs
         self.future: Future = Future()
 
+    __class_getitem__ = classmethod(types.GenericAlias)
+
     def __call__(self) -> None:
         if not self.future.set_running_or_notify_cancel():
             return
-
         try:
             result = self.target(*self.args, **self.kwargs)
         except BaseException as e:
@@ -37,8 +38,6 @@ class Task:
             self = None
         else:
             self.future.set_result(result)
-
-    __class_getitem__ = classmethod(types.GenericAlias)
 
     def start(self) -> Future:
         threading.Thread(target=self).start()
