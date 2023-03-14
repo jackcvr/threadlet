@@ -19,7 +19,7 @@ wait = _base.wait
 class Task:
     __slots__ = ("target", "args", "kwargs", "future")
 
-    def __init__(self, target: t.Callable, args: t.Any, kwargs: t.Any) -> None:
+    def __init__(self, target: t.Callable, *args: t.Any, **kwargs: t.Any) -> None:
         self.target = target
         self.args = args
         self.kwargs = kwargs
@@ -40,11 +40,13 @@ class Task:
 
     __class_getitem__ = classmethod(types.GenericAlias)
 
+    def start(self) -> Future:
+        threading.Thread(target=self).start()
+        return self.future
+
     @classmethod
     def run(cls, target: t.Callable, *args: t.Any, **kwargs: t.Any) -> Future:
-        task = cls(target, args, kwargs)
-        threading.Thread(target=task).start()
-        return task.future
+        return cls(target, *args, **kwargs).start()
 
 
 def _cancel_all_futures(q: QueueType) -> None:
@@ -63,7 +65,7 @@ class Worker(BaseWorker):
         self._queue = q or queue.SimpleQueue()
 
     def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> Future:
-        task = Task(target, args, kwargs)
+        task = Task(target, *args, **kwargs)
         self._queue.put(task)
         return task.future
 
@@ -102,7 +104,7 @@ class SimpleThreadPoolExecutor(BaseThreadPoolExecutor):
         return self
 
     def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> Future:
-        task = Task(target, args, kwargs)
+        task = Task(target, *args, **kwargs)
         self._queue.put(task)
         return task.future
 
@@ -191,7 +193,7 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
 
     def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> _base.Future:
         with self._shutdown_lock:
-            task = Task(target, args, kwargs)
+            task = Task(target, *args, **kwargs)
             self._queue.put(task)
             workers_num = len(self._workers)
             has_idle_workers = self._idle_sem.acquire(blocking=False)

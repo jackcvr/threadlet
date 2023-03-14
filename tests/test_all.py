@@ -15,8 +15,9 @@ def expected_result():
 
 
 def test_task_run(expected_result):
-    f = Task.run(lambda: expected_result)
-    assert f.result() is expected_result
+    f1 = Task(lambda: expected_result).start()
+    f2 = Task.run(lambda: expected_result)
+    assert f1.result() is f2.result() is expected_result
 
 
 def test_worker(expected_result):
