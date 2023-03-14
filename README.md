@@ -29,14 +29,14 @@ pip install threadlet
 ```python
 import time
 import threading
-from threadlet import run_in_thread, Worker, ThreadPoolExecutor, wait
+from threadlet import Task, Worker, ThreadPoolExecutor, wait
 
 
 def calc(x):
     return x * 2
 
 # spawns new thread each time to run function in it
-future = run_in_thread(calc, 2)
+future = Task.run(calc, 2)
 assert future.result() == 4
 
 # spawns one thread to handle all submitted functions

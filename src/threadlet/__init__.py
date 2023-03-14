@@ -10,19 +10,20 @@ from .abc import BaseThreadPoolExecutor, BaseWorker
 
 QueueType = t.Union[queue.Queue, queue.SimpleQueue]
 
+Future = _base.Future
 TimeoutError = _base.TimeoutError
 as_completed = _base.as_completed
 wait = _base.wait
 
 
-class Item:
+class Task:
     __slots__ = ("target", "args", "kwargs", "future")
 
     def __init__(self, target: t.Callable, args: t.Any, kwargs: t.Any) -> None:
         self.target = target
         self.args = args
         self.kwargs = kwargs
-        self.future: _base.Future = _base.Future()
+        self.future: Future = Future()
 
     def __call__(self) -> None:
         if not self.future.set_running_or_notify_cancel():
@@ -39,11 +40,11 @@ class Item:
 
     __class_getitem__ = classmethod(types.GenericAlias)
 
-
-def run_in_thread(target: t.Callable, *args: t.Any, **kwargs: t.Any) -> _base.Future:
-    item = Item(target, args, kwargs)
-    threading.Thread(target=item).start()
-    return item.future
+    @classmethod
+    def run(cls, target: t.Callable, *args: t.Any, **kwargs: t.Any) -> Future:
+        task = cls(target, args, kwargs)
+        threading.Thread(target=task).start()
+        return task.future
 
 
 def _cancel_all_futures(q: QueueType) -> None:
@@ -61,18 +62,18 @@ class Worker(BaseWorker):
         super().__init__(**kwargs)
         self._queue = q or queue.SimpleQueue()
 
-    def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> _base.Future:
-        item = Item(target, args, kwargs)
-        self._queue.put(item)
-        return item.future
+    def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> Future:
+        task = Task(target, args, kwargs)
+        self._queue.put(task)
+        return task.future
 
     def _run_forever(self) -> None:
         while True:
-            item = self._queue.get()
-            if item is None:
+            task = self._queue.get()
+            if task is None:
                 break
-            item()
-            del item
+            task()
+            del task
 
     def _stop(self) -> None:
         self._queue.put(None)
@@ -100,10 +101,10 @@ class SimpleThreadPoolExecutor(BaseThreadPoolExecutor):
             w.start()
         return self
 
-    def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> _base.Future:
-        item = Item(target, args, kwargs)
-        self._queue.put(item)
-        return item.future
+    def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> Future:
+        task = Task(target, args, kwargs)
+        self._queue.put(task)
+        return task.future
 
     def shutdown(self, wait=True) -> None:
         for w in set(self._workers):
@@ -132,17 +133,17 @@ class _PoolWorker(Worker):
         try:
             while True:
                 try:
-                    item = self._queue.get_nowait()
+                    task = self._queue.get_nowait()
                 except queue.Empty:
                     self._executor.idle_sem.release()
                     try:
-                        item = self._queue.get(timeout=self._idle_timeout)
+                        task = self._queue.get(timeout=self._idle_timeout)
                     except queue.Empty:
                         break
-                if item is None:
+                if task is None:
                     break
-                item()
-                del item
+                task()
+                del task
         finally:
             self._executor.idle_sem.acquire(blocking=False)
             self._executor.workers.discard(self)
@@ -190,13 +191,13 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
 
     def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> _base.Future:
         with self._shutdown_lock:
-            item = Item(target, args, kwargs)
-            self._queue.put(item)
+            task = Task(target, args, kwargs)
+            self._queue.put(task)
             workers_num = len(self._workers)
             has_idle_workers = self._idle_sem.acquire(blocking=False)
             if workers_num < self._max_workers and not has_idle_workers:
                 self._add_worker(idle_timeout=self._idle_timeout)
-            return item.future
+            return task.future
 
     def shutdown(self, wait=True, *, cancel_futures=False) -> None:
         with self._shutdown_lock:

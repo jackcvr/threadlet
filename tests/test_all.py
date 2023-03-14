@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from threadlet import SimpleThreadPoolExecutor, ThreadPoolExecutor, TimeoutError, Worker, run_in_thread, wait
+from threadlet import SimpleThreadPoolExecutor, Task, ThreadPoolExecutor, TimeoutError, Worker, wait
 
 MAX_WORKERS_VALUES = (1, 2, 4)
 
@@ -14,8 +14,8 @@ def expected_result():
     return object()
 
 
-def test_run_in_thread(expected_result):
-    f = run_in_thread(lambda: expected_result)
+def test_task_run(expected_result):
+    f = Task.run(lambda: expected_result)
     assert f.result() is expected_result
 
 
