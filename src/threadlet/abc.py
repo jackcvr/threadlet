@@ -49,12 +49,10 @@ class BaseWorker(AbstractContextManager):
             raise TimeoutError(f"Worker {self} did not stop after {timeout} seconds")
 
     @abc.abstractmethod
-    def _run_forever(self) -> None:
-        ...
+    def _run_forever(self) -> None: ...
 
     @abc.abstractmethod
-    def _stop(self) -> None:
-        ...
+    def _stop(self) -> None: ...
 
 
 class BaseThreadPoolExecutor(AbstractContextManager):
@@ -66,9 +64,9 @@ class BaseThreadPoolExecutor(AbstractContextManager):
         return False
 
     @abc.abstractmethod
-    def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> _base.Future:
-        ...
+    def submit(
+        self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any
+    ) -> _base.Future: ...
 
     @abc.abstractmethod
-    def shutdown(self, wait=True) -> None:
-        ...
+    def shutdown(self, wait=True) -> None: ...

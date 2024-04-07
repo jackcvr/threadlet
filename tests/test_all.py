@@ -4,7 +4,14 @@ import time
 
 import pytest
 
-from threadlet import SimpleThreadPoolExecutor, Task, ThreadPoolExecutor, TimeoutError, Worker, wait
+from threadlet import (
+    SimpleThreadPoolExecutor,
+    Task,
+    ThreadPoolExecutor,
+    TimeoutError,
+    Worker,
+    wait,
+)
 
 MAX_WORKERS_VALUES = (1, 2, 4)
 
@@ -123,7 +130,9 @@ def test_executor_min_workers(max_workers):
     idle_timeout = 0.5
     work_time = 0.1
     min_workers = max_workers - 1
-    with ThreadPoolExecutor(max_workers, min_workers=min_workers, idle_timeout=idle_timeout) as tpe:
+    with ThreadPoolExecutor(
+        max_workers, min_workers=min_workers, idle_timeout=idle_timeout
+    ) as tpe:
         fs = set()
         for _ in range(max_workers):
             fs.add(tpe.submit(time.sleep, work_time))

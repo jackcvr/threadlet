@@ -25,7 +25,7 @@ class Task:
         self.kwargs = kwargs
         self.future: Future = Future()
 
-    __class_getitem__ = classmethod(types.GenericAlias)
+    __class_getitem__: classmethod = classmethod(types.GenericAlias)
 
     def __call__(self) -> None:
         if not self.future.set_running_or_notify_cancel():
@@ -83,12 +83,16 @@ class Worker(BaseWorker):
 class SimpleThreadPoolExecutor(BaseThreadPoolExecutor):
     _counter = itertools.count().__next__
 
-    def __init__(self, max_workers: int, *, name: str = None, queue_limit: int = None) -> None:
+    def __init__(
+        self, max_workers: int, *, name: str = None, queue_limit: int = None
+    ) -> None:
         if max_workers <= 0:
             raise ValueError("max_workers must be greater than 0")
         self._max_workers = max_workers
         self._name = str(name or f"ThreadPool-{self.__class__._counter()}")
-        self._queue: QueueType = queue.Queue(maxsize=queue_limit) if queue_limit else queue.SimpleQueue()
+        self._queue: QueueType = (
+            queue.Queue(maxsize=queue_limit) if queue_limit else queue.SimpleQueue()
+        )
         self._workers: t.Set[Worker] = set()
 
     @property
@@ -190,7 +194,9 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
         self._workers.add(worker)
         worker.start()
 
-    def submit(self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any) -> _base.Future:
+    def submit(
+        self, target: t.Callable, /, *args: t.Any, **kwargs: t.Any
+    ) -> _base.Future:
         with self._shutdown_lock:
             task = Task(target, *args, **kwargs)
             self._queue.put(task)
