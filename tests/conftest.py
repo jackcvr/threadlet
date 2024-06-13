@@ -2,6 +2,7 @@ import _thread
 import gc
 import threading
 import time
+import typing
 
 import pytest
 
@@ -47,3 +48,26 @@ def threading_cleanup():
         yield
     finally:
         _threading_cleanup(*thread_key)
+
+
+@pytest.fixture
+def expected_result():
+    return object()
+
+
+class MyError(Exception):
+    pass
+
+
+def raise_error():
+    raise MyError
+
+
+class Errors(typing.NamedTuple):
+    func: typing.Callable = raise_error
+    exc: type[Exception] = MyError
+
+
+@pytest.fixture
+def errors():
+    return Errors()

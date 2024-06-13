@@ -2,7 +2,7 @@ repos:
 
   # common useful hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -16,7 +16,7 @@ repos:
 
   # linter and formatter (Drop-in parity with Flake8, isort, and Black)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.4
+    rev: v0.4.8
     hooks:
       - id: ruff
         args: [--fix]
@@ -24,7 +24,7 @@ repos:
 
   # static type checker (mypy or pyright?)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -37,7 +37,7 @@ repos:
 
   # security linter
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.8
+    rev: 1.7.9
     hooks:
       - id: bandit
         exclude: tests/
