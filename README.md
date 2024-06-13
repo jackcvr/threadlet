@@ -3,7 +3,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/threadlet.svg)](https://pypi.org/project/threadlet)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/threadlet.svg)](https://pypi.org/project/threadlet)
 
-* **Task** is an object for containing a function and a `Future` object to store a result of the function.
+* **Task** is an entity intended to be run in thread. Task contains a function and a `Future` object to store a result of the function execution.
 * **Worker** is a thread with a loop over incoming tasks.
 * **SimpleThreadPoolExecutor** is a more efficient variant of the `concurrent.futures.ThreadPoolExecutor` which spawns all the threads at the beginning.
 
@@ -38,6 +38,10 @@ def calc(x):
 # run task asynchronously in a separate thread
 future = Task(calc, 2).start()
 assert future.result() == 4
+# ^ equivalent to:
+# task = Task(calc, 2)
+# threading.Thread(target=task).start()
+# assert task.future.result() == 4
 
 # spawns one thread to sequentially handle all submitted functions
 with Worker() as w:
