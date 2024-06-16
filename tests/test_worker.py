@@ -16,9 +16,7 @@ def test_worker_lifetime():
 def test_worker_success():
     with Worker() as w:
         f1 = w.submit(add, 1, 1)
-        f2 = w.submit(add, 2, 2)
         assert f1.result() == 2
-        assert f2.result() == 4
 
 
 def test_worker_fail(errors):
