@@ -2,7 +2,6 @@ import _thread
 import gc
 import threading
 import time
-import typing
 
 import pytest
 
@@ -56,18 +55,11 @@ def expected_result():
 
 
 class MyError(Exception):
-    pass
+    @classmethod
+    def throw(cls):
+        raise cls
 
 
-def raise_error():
-    raise MyError
-
-
-class Errors(typing.NamedTuple):
-    func: typing.Callable = raise_error
-    exc: type[Exception] = MyError
-
-
-@pytest.fixture
-def errors():
-    return Errors()
+@pytest.fixture(scope="session")
+def error_class():
+    return MyError

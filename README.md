@@ -4,18 +4,19 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/threadlet.svg)](https://pypi.org/project/threadlet)
 
 * **Task** is an entity intended to be run in a thread. Task contains a function and a `Future` object to store a result of the function execution.
-You can start a task in a separate thread using `spawn` function, see #Usage.
-* **Worker** is a thread with a loop over incoming tasks.
-* **SimpleThreadPoolExecutor** is a more efficient variant of the `concurrent.futures.ThreadPoolExecutor` which spawns all the threads at the beginning.
+You can start a task in a separate thread using `spawn` or `go` functions, see [Usage](#usage).
+* **Worker** is a thread with a loop executing incoming tasks.
+* **SimpleThreadPoolExecutor** is a simple variant of `concurrent.futures.ThreadPoolExecutor` which spawns all the threads at the beginning.
+* **ThreadPoolExecutor** is an adaptive variant of the `concurrent.futures.ThreadPoolExecutor` which automatically spawns and shutdowns threads depending on load.
 
 -----
 
 **Table of Contents**
 
 - [Installation](#installation)
-- [License](#license)
 - [Usage](#usage)
 - [Benchmarks](#benchmarks)
+- [License](#license)
 
 ## Installation
 
@@ -23,26 +24,36 @@ You can start a task in a separate thread using `spawn` function, see #Usage.
 pip install threadlet
 ```
 
-## License
-
-`threadlet` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
-
 ## Usage
 
 ```python
 import threading
-from threadlet import spawn, Task, Future, Worker, SimpleThreadPoolExecutor
+from threadlet import (
+    spawn,
+    go,
+    Future,
+    Task,
+    Worker,
+    SimpleThreadPoolExecutor,
+    ThreadPoolExecutor,
+)
 
 
 def calc(x):
     return x * 2
 
 
-# creating a task and starting it in a separate thread
-future = spawn(calc, 2)
+# execute function in an adaptive thread pool executor
+# which is going to be started automatically at first `go` call and shut down at application exit
+future = go(calc, 2)
 assert future.result() == 4
 # is equivalent to:
-future = Task(Future(), calc, [2], {}).start()
+with ThreadPoolExecutor() as tpe:
+    future = tpe.submit(calc, 2)
+    assert future.result() == 4
+
+# execute function in a separate thread:
+future = spawn(calc, 2)
 assert future.result() == 4
 # is equivalent to:
 task = Task(Future(), calc, [2], {})
@@ -60,17 +71,36 @@ with Worker() as w:
 with SimpleThreadPoolExecutor(4) as tpe:
     future = tpe.submit(calc, 5)
     assert future.result() == 10
+```
 
 
 ## Benchmarks
-```
-|-----------------------------------------------------------------------|
-| benchmark             | ThreadPoolExecutor | SimpleThreadPoolExecutor |
-|-----------------------------------------------------------------------|
-| submit                |
-|-----------------------------------------------------------------------|
-| end to end (1 worker) |
-|-----------------------------------------------------------------------|
-```
+
+* submit: submits 1 million futures.
+* e2e[N] (end to end[N workers]): submits 1 million futures using N workers and consumes results in a separate thread.
 
 ```
+concurrent.futures.thread.ThreadPoolExecutor submit: time=12.94s size=0.04mb, peak=43.61mb
+                threadlet.ThreadPoolExecutor submit: time= 2.89s size=0.04mb, peak=20.35mb
+          threadlet.SimpleThreadPoolExecutor submit: time= 2.72s size=0.04mb, peak=24.49mb
+
+concurrent.futures.thread.ThreadPoolExecutor e2e[1]: time=15.80s size=0.04mb, peak=28.56mb
+                threadlet.ThreadPoolExecutor e2e[1]: time= 4.32s size=0.02mb, peak=19.48mb
+          threadlet.SimpleThreadPoolExecutor e2e[1]: time= 4.23s size=0.02mb, peak=26.45mb
+
+concurrent.futures.thread.ThreadPoolExecutor e2e[2]: time=33.36s size=0.07mb, peak=32.00mb
+                threadlet.ThreadPoolExecutor e2e[2]: time= 4.35s size=0.02mb, peak=35.83mb
+          threadlet.SimpleThreadPoolExecutor e2e[2]: time= 4.18s size=0.02mb, peak=41.81mb
+
+concurrent.futures.thread.ThreadPoolExecutor e2e[4]: time= 7.49s size=0.11mb, peak=42.97mb
+                threadlet.ThreadPoolExecutor e2e[4]: time= 4.37s size=0.03mb, peak=28.21mb
+          threadlet.SimpleThreadPoolExecutor e2e[4]: time= 4.30s size=0.02mb, peak=39.81mb
+
+concurrent.futures.thread.ThreadPoolExecutor e2e[8]: time= 7.30s size=0.21mb, peak=41.04mb
+                threadlet.ThreadPoolExecutor e2e[8]: time= 4.49s size=0.05mb, peak=29.20mb
+          threadlet.SimpleThreadPoolExecutor e2e[8]: time= 4.18s size=0.03mb, peak=38.36mb
+```
+
+## License
+
+`threadlet` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

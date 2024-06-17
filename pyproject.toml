@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "threadlet"
-description = "Threads with results"
+description = "Higher level threading with futures"
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
-keywords = []
+keywords = ["threads", "thread pool"]
 authors = [
   { name = "Andrii Kuzmin", email = "jack.cvr@gmail.com" },
 ]
@@ -45,7 +45,7 @@ cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/th
 no-cov = "cov --no-cov {args}"
 
 [[tool.hatch.envs.test.matrix]]
-python = ["37", "38", "39", "310", "311"]
+python = ["37", "38", "39", "310", "311", "312"]
 
 [tool.coverage.run]
 branch = true
