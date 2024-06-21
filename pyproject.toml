@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "threadlet"
-description = "Higher level threading with futures"
+description = "Convenient threading with futures"
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"

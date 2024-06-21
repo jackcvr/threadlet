@@ -3,6 +3,8 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/threadlet.svg)](https://pypi.org/project/threadlet)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/threadlet.svg)](https://pypi.org/project/threadlet)
 
+More convenient threads and pools. With futures.
+
 ```python
 from threadlet import spawn, go
 
@@ -11,19 +13,22 @@ def plus2(n):
   return n + 2
 
 
-future = spawn(plus2, 1)  # run in thread
+# run function in thread
+future = spawn(plus2, 1)
 assert future.result() == 3
 
-future = go(plus2, 2)  # run in adaptive thread pool executor
+# run function in adaptive thread pool executor
+future = go(plus2, 2)
 assert future.result() == 4
 ```
 
-* **spawn** is a helper which runs your function in a separate thread and returns `Future`.
-* **go** is a similar helper, but runs task in adaptive thread pool executor.
-* **Task** is an object for encapsulating some function, its arguments and `Future` to storing its result.
+* **spawn** is a helper which runs function in a separate thread and returns `Future`.
+* **go** is a similar helper, but runs function in adaptive thread pool executor which is handled in background.
+* **Task** is a wrapper for encapsulating a function, its arguments and `Future` object.
 * **Worker** is a thread with a loop for executing incoming tasks.
 * **SimpleThreadPoolExecutor** is a simple variant of `concurrent.futures.ThreadPoolExecutor` which spawns all the threads at the beginning.
 * **ThreadPoolExecutor** is an adaptive variant of the `concurrent.futures.ThreadPoolExecutor` which automatically spawns and shutdowns threads depending on load.
+One thread in the pool lives forever, new threads are spawned on `submit` call if there are no idle threads and dies after some idle time(1 second by default).
 
 -----
 
