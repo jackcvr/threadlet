@@ -13,7 +13,7 @@ as_completed = _base.as_completed
 
 
 class DeadWorker(RuntimeError):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Cannot submit new future: worker is down")
 
 
@@ -53,7 +53,7 @@ class Worker(threading.Thread):
         self.on_idle: t.Optional[t.Callable] = None
 
     @property
-    def future(self):
+    def future(self) -> Future:
         return self._future
 
     def __enter__(self) -> "Worker":
@@ -82,7 +82,7 @@ class Worker(threading.Thread):
         else:
             self._future.set_result(None)
 
-    def _get_task(self):
+    def _get_task(self) -> t.Optional[Task]:
         try:
             return self._queue.get(block=False)
         except queue.Empty:
@@ -164,7 +164,7 @@ class TempWorker(Worker):
         super().__init__(q, **kwargs)
         self._idle_timeout = idle_timeout
 
-    def _get_task(self):
+    def _get_task(self) -> t.Optional[Task]:
         try:
             return self._queue.get(block=False)
         except queue.Empty:
@@ -176,7 +176,7 @@ class TempWorker(Worker):
                 return None
 
 
-def _discard_worker(executor_ref, w: Worker):
+def _discard_worker(executor_ref, w: Worker) -> None:
     self = executor_ref()
     if not self:
         return
@@ -186,7 +186,7 @@ def _discard_worker(executor_ref, w: Worker):
             self._idle_workers -= 1
 
 
-def _inc_idle_workers(executor_ref):
+def _inc_idle_workers(executor_ref) -> None:
     self = executor_ref()
     if not self:
         return
@@ -201,7 +201,7 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
         *,
         idle_timeout=TempWorker.IDLE_TIMEOUT,
         name: str = None,
-    ):
+    ) -> None:
         super().__init__(max_workers or self.get_default_max_workers(), name=name)
         self._idle_timeout = idle_timeout
         self._idle_lock = threading.Lock()
@@ -216,7 +216,7 @@ class ThreadPoolExecutor(SimpleThreadPoolExecutor):
         return self
 
     @classmethod
-    def get_default_max_workers(cls):
+    def get_default_max_workers(cls) -> int:
         import os
 
         return min(64, os.cpu_count() * 2)
@@ -258,7 +258,7 @@ _max_workers: t.Optional[int] = None
 _idle_timeout: int = TempWorker.IDLE_TIMEOUT
 
 
-def set_max_workers(n):
+def set_max_workers(n: int) -> None:
     global _max_workers
 
     _max_workers = n
@@ -266,7 +266,7 @@ def set_max_workers(n):
         _executor.set_max_workers(_max_workers)
 
 
-def set_idle_timeout(timeout):
+def set_idle_timeout(timeout: int) -> None:
     global _idle_timeout
 
     _idle_timeout = timeout
@@ -274,7 +274,7 @@ def set_idle_timeout(timeout):
         _executor.set_idle_timeout(timeout)
 
 
-def start_executor():
+def start_executor() -> None:
     global _executor
 
     if _executor is None:
@@ -282,7 +282,7 @@ def start_executor():
         _executor.__enter__()
 
 
-def shutdown_executor():
+def shutdown_executor() -> None:
     global _executor
 
     if _executor is not None:
