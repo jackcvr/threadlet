@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+rm -rf dist/
+hatch build
+.venv/bin/twine upload dist/*
