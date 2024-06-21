@@ -3,9 +3,25 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/threadlet.svg)](https://pypi.org/project/threadlet)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/threadlet.svg)](https://pypi.org/project/threadlet)
 
-* **Task** is an entity intended to be run in a thread. Task contains a function and a `Future` object to store a result of the function execution.
-You can start a task in a separate thread using `spawn` or `go` functions, see [Usage](#usage).
-* **Worker** is a thread with a loop executing incoming tasks.
+```python
+from threadlet import spawn, go
+
+
+def plus2(n):
+  return n + 2
+
+
+future = spawn(plus2, 1)  # run in thread
+assert future.result() == 3
+
+future = go(plus2, 2)  # run in adaptive thread pool executor
+assert future.result() == 4
+```
+
+* **spawn** is a helper which runs your function in a separate thread and returns `Future`.
+* **go** is a similar helper, but runs task in adaptive thread pool executor.
+* **Task** is an object for encapsulating some function, its arguments and `Future` to storing its result.
+* **Worker** is a thread with a loop for executing incoming tasks.
 * **SimpleThreadPoolExecutor** is a simple variant of `concurrent.futures.ThreadPoolExecutor` which spawns all the threads at the beginning.
 * **ThreadPoolExecutor** is an adaptive variant of the `concurrent.futures.ThreadPoolExecutor` which automatically spawns and shutdowns threads depending on load.
 
