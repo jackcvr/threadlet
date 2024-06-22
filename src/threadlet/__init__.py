@@ -110,7 +110,7 @@ def _stop_workers(workers, wait=True) -> None:
         _base.wait((w.future for w in workers))
 
 
-class SimpleThreadPoolExecutor:
+class SimpleThreadPoolExecutor(_base.Executor):
     _counter = itertools.count().__next__
 
     def __init__(self, max_workers: int, *, name: str = None) -> None:
@@ -147,11 +147,19 @@ class SimpleThreadPoolExecutor:
             self._queue.put(Task(f, target, args, kwargs))
             return f
 
-    def shutdown(self, wait=True) -> None:
+    def shutdown(self, wait=True, *, cancel_futures=False) -> None:
         with self._shutdown_lock:
             if self._is_down:
                 return
             self._is_down = True
+            if cancel_futures:
+                while True:
+                    try:
+                        item = self._queue.get_nowait()
+                    except queue.Empty:
+                        break
+                    if item is not None:
+                        item.future.cancel()
             _stop_workers(self._workers, wait=wait)
 
 
