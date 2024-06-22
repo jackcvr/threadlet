@@ -3,7 +3,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/threadlet.svg)](https://pypi.org/project/threadlet)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/threadlet.svg)](https://pypi.org/project/threadlet)
 
-More convenient threads and pools. With futures.
+More convenient threads and pools with futures.
 
 ```python
 from threadlet import spawn, go
