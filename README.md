@@ -28,7 +28,7 @@ assert future.result() == 4
 * **Worker** is a thread with a loop for executing incoming tasks.
 * **SimpleThreadPoolExecutor** is a simple variant of `concurrent.futures.ThreadPoolExecutor` which spawns all the threads at the beginning.
 * **ThreadPoolExecutor** is an adaptive variant of the `concurrent.futures.ThreadPoolExecutor` which automatically spawns and shutdowns threads depending on load.
-One thread in the pool lives forever, new threads are spawned on `submit` call if there are no idle threads and dies after some idle time(1 second by default).
+One thread in the pool lives forever, new threads are spawned on `submit` call if there are no idle threads and die after some idle time(1 second by default).
 
 -----
 
